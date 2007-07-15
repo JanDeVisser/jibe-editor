@@ -1,0 +1,22 @@
+<mimetype>
+  <description>Java Source File</description>
+  <mimetype>text/x-java</mimetype>
+  <mimetype>text/java</mimetype>
+  <mimetype>text/x-bsh</mimetype>
+  <mimetype>text/bsh</mimetype>
+  <pattern>*.java</pattern>
+  <pattern>*.bsh</pattern>
+  
+  <keywords>
+    abstract continue for new switch assert default goto
+    package synchronized boolean do if private this break
+    double implements protected throw byte else import
+    public throws case enum instanceof return transient
+    catch extends int short try char final interface
+    static void class finally long strictfp volatile const
+    float native super while
+  </keywords>
+  <quote1>"</quote1>
+  <quote2>'</quote2>
+  <comments endofline="//" blockstart="/\*" blockend="\*/"/>
+</mimetype>
