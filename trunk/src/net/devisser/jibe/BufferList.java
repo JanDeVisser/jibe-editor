@@ -53,6 +53,7 @@ public class BufferList extends AbstractBuffer {
         
     QHBoxLayout box = new QHBoxLayout();
     m_lw = new QListWidget();
+    m_top.setFocusProxy(m_lw);
     box.addWidget(m_lw);
     m_top.setLayout(box);
     //QWidget b = new QWidget();

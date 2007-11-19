@@ -42,6 +42,7 @@ public class BufferManager extends QTabWidget {
   //-------------------------------------------------------------------------
   
   public BufferManager() {
+    currentChanged.connect(this, "bufferSwitch()");
   }
   
   //-------------------------------------------------------------------------
@@ -96,6 +97,25 @@ public class BufferManager extends QTabWidget {
   //-------------------------------------------------------------------------
   // SLOTS
   //-------------------------------------------------------------------------
+  
+  public void bufferSwitch() {
+    currentWidget().setFocus();
+  }
+  
+  public void showBufferList() {
+    BufferList bl = null;
+    for (Buffer buffer : m_buffers.values()) {
+      if (buffer instanceof BufferList) {
+        bl = (BufferList) buffer;
+      }
+    }
+    if (bl == null) {
+      bl = new BufferList();
+      addBuffer(bl);
+    } else {
+      setCurrentWidget(bl.getWidget());          
+    }
+  }
   
   public void newFile() {
     openBuffer(null);

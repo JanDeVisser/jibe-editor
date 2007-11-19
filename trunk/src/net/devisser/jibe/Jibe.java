@@ -47,11 +47,6 @@ public class Jibe extends QMainWindow {
     m_bufmgr.currentChanged.connect(this, "bufferSwitch()");
   }
   
-  public void showBufferList() {
-    BufferList bl = new BufferList();
-    m_bufmgr.addBuffer(bl);
-  }
-  
   public void about() {
     QMessageBox.about(this, tr("About Syntax Highlighter"),
         tr("<p>The <b>Syntax Highlighter</b> example shows how "
@@ -101,7 +96,7 @@ public class Jibe extends QMainWindow {
         Qt.KeyboardModifier.ControlModifier.value() + 
         Qt.KeyboardModifier.AltModifier.value() + 
         Qt.Key.Key_Space.value()));
-    listAct.triggered.connect(this, "showBufferList()");
+    listAct.triggered.connect(m_bufmgr, "showBufferList()");
     fileMenu.addAction(listAct);
     
     
