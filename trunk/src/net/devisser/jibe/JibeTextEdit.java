@@ -33,8 +33,7 @@ public class JibeTextEdit extends QTextEdit {
   //-------------------------------------------------------------------------
   // ATTRIBUTES
   //-------------------------------------------------------------------------
-  private static String __dfcversion = "@(#)$Id: src.java,v 1.27 2006/10/17 14:02:18 artur Exp $";
-  
+
   private int m_guidepx = 0;
   
   
@@ -45,14 +44,14 @@ public class JibeTextEdit extends QTextEdit {
   public JibeTextEdit() {
     super();
     QFont font = new QFont();
-    font.setFamily(Config.getProperty("jibe.editor.font", "Courier"));
+    font.setFamily(Config.getProperty("jibe.editor.font"));
     font.setFixedPitch(true);
-    font.setPointSize(Config.getIntProperty("jibe.editor.fontsize", 10));
+    font.setPointSize(Config.getIntProperty("jibe.editor.fontsize"));
     
     setLineWrapMode(QTextEdit.LineWrapMode.NoWrap);
     setFont(font);
     
-    int guideat = Config.getIntProperty("jibe.editor.guide.column", 80);
+    int guideat = Config.getIntProperty("jibe.editor.guide.column");
     if (guideat > 0) {
       StringBuffer sb = new StringBuffer();
       while (sb.length() < guideat) sb.append('W');
@@ -73,7 +72,7 @@ public class JibeTextEdit extends QTextEdit {
     if (m_guidepx > 0) {
       QPainter p = new QPainter();
       p.begin(viewport());
-      p.setPen(new QColor(Config.getProperty("jibe.editor.guide.color", "lightgray")));
+      p.setPen(new QColor(Config.getProperty("jibe.editor.guide.color")));
       p.drawLine(m_guidepx, 0, m_guidepx, height());
       p.end();
     }

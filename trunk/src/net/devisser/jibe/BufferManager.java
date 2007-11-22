@@ -17,9 +17,14 @@
 
 package net.devisser.jibe;
 
-import java.util.*;
-import com.trolltech.qt.core.*;
-import com.trolltech.qt.gui.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
+import com.trolltech.qt.gui.QColor;
+import com.trolltech.qt.gui.QFileDialog;
+import com.trolltech.qt.gui.QTabWidget;
 
 
 /**
@@ -32,16 +37,21 @@ public class BufferManager extends QTabWidget {
   //-------------------------------------------------------------------------
   // ATTRIBUTES
   //-------------------------------------------------------------------------
-  private static String __version = "@(#)$Id: src.java,v 1.27 2006/10/17 14:02:18 artur Exp $";
   
-  public Map<String, Buffer> m_buffers = new TreeMap();
-  public Map<Integer, Buffer> m_buflist = new TreeMap();
+  private Map<String, Buffer> m_buffers = new TreeMap<String, Buffer>();
+  private Map<Integer, Buffer> m_buflist = new TreeMap<Integer, Buffer>();
+  
+  private static BufferManager s_singleton = null; 
   
   //-------------------------------------------------------------------------
   // CONSTRUCTORS
   //-------------------------------------------------------------------------
   
   public BufferManager() {
+    if (s_singleton != null) {
+      throw new RuntimeException("BufferManager is a singleton");
+    }
+    s_singleton = this;
     currentChanged.connect(this, "bufferSwitch()");
   }
   
@@ -103,17 +113,25 @@ public class BufferManager extends QTabWidget {
   }
   
   public void showBufferList() {
-    BufferList bl = null;
-    for (Buffer buffer : m_buffers.values()) {
-      if (buffer instanceof BufferList) {
-        bl = (BufferList) buffer;
+    singletonBuffer(BufferList.class);
+  }
+  
+  public void singletonBuffer(Class<? extends Buffer> cls) {
+    try {
+      Buffer b = null;
+      for (Buffer buffer : m_buffers.values()) {
+        if (cls.isInstance(buffer)) {
+          b = buffer;
+        }
       }
-    }
-    if (bl == null) {
-      bl = new BufferList();
-      addBuffer(bl);
-    } else {
-      setCurrentWidget(bl.getWidget());          
+      if (b == null) {
+        b = cls.newInstance();
+        addBuffer(b);
+      } else {
+        setCurrentWidget(b.getWidget());          
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
     }
   }
   
@@ -158,5 +176,9 @@ public class BufferManager extends QTabWidget {
   //-------------------------------------------------------------------------
   // STATIC METHODS
   //-------------------------------------------------------------------------
+  
+  public static BufferManager getInstance() {
+    return s_singleton;
+  }
   
 }

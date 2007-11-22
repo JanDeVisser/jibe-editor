@@ -19,6 +19,17 @@ package net.devisser.jibe;
 import java.io.*;
 import java.util.*;
 
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import com.trolltech.qt.gui.QColor;
+import com.trolltech.qt.gui.QFont;
+
 public class Config {
 
   private static Properties s_props = new Properties();
@@ -26,6 +37,7 @@ public class Config {
   private static File s_propsfile = null;
   private static boolean s_hold = false;
   private static boolean s_dirty = false;
+  private static XPathFactory s_xpath = XPathFactory.newInstance();
 
   static {
     s_home = System.getProperty("user.home") + "/.jibe";
@@ -55,54 +67,47 @@ public class Config {
     }
     
     try {
-      s_propsfile = new File(s_home, "jibe.properties");
-      if (s_propsfile.exists()) {
-        FileInputStream fis = new FileInputStream(s_propsfile);
-        if (writable) writable = s_propsfile.canWrite();
-        try {
-          s_props.load(fis);
-        } finally {
-          fis.close();
-        }
-      } else {
-        System.err.println("No Jibe properties file " + s_propsfile.getAbsolutePath());
-      }
+      readMetadata("Jibe Core", Config.class.getResourceAsStream("/net/devisser/jibe/config.xml"));
     } catch (Exception e) {
-      System.err.println("Exception reading " + s_home + "/jibe.properties");
+      System.err.println("Exception reading config metadata");
       e.printStackTrace();
-    } finally {
-      if (!writable) s_propsfile = null;
     }
+    ConfigKey.readConfig();
   }
   
   public static String getHome() {
     return s_home;
   }
   
-  public static String getProperty(String name, String def) {
-    return s_props.getProperty(name, def);
-  }
-
   public static String getProperty(String name) {
-    return s_props.getProperty(name);
+    ConfigKey key = ConfigKey.getInstance(name);
+    return key.getStringValue();
   }
   
-  public static int getIntProperty(String name, int def) {
-    String val = getProperty(name);
-    try {
-      return (val == null) ? def : Integer.parseInt(val);
-    } catch (NumberFormatException nfe) {
-      return 0;
-    }
+  public static int getIntProperty(String name) {
+    ConfigKey key = ConfigKey.getInstance(name);
+    assert key.getType() == ConfigKeyType.INTEGER;
+    Integer ret = (Integer) key.getValue();
+    return (ret != null) ? ret : 0;
+  }
+  
+  public static boolean getBooleanProperty(String name) {
+    ConfigKey key = ConfigKey.getInstance(name);
+    assert key.getType() == ConfigKeyType.BOOLEAN;
+    Boolean ret = (Boolean) key.getValue();
+    return (ret != null) ? ret : false;
+  }
+  
+  public static QColor getColorProperty(String name) {
+    ConfigKey key = ConfigKey.getInstance(name);
+    assert key.getType() == ConfigKeyType.COLOR;
+    return (QColor) key.getValue();
   }
 
-  public static int getIntProperty(String name) {
-    String val = getProperty(name);
-    try {
-      return (val == null) ? 0 : Integer.parseInt(val);
-    } catch (NumberFormatException nfe) {
-      return 0;
-    }
+  public static QFont getFontProperty(String name) {
+    ConfigKey key = ConfigKey.getInstance(name);
+    assert key.getType() == ConfigKeyType.FONT;
+    return (QFont) key.getValue();
   }
   
   public static void hold() {
@@ -111,42 +116,41 @@ public class Config {
   
   public static void write() {
     s_hold = false;
-    if (s_dirty && (s_propsfile != null)) {
-      try {
-        FileOutputStream fos = new FileOutputStream(s_propsfile);
-        try {
-          s_props.store(fos, null);
-        } finally {
-          fos.close();
-        }
-      } catch (Exception e) {
-        System.err.println("Exception writing properties");
-        e.printStackTrace();
-        s_propsfile = null;
-      }
+    if (s_dirty) {
+      ConfigKey.writeConfig();
     }
     s_dirty = false;
   }
   
-  public static void setProperty(String name, String value) {
-    String old = s_props.getProperty(name);
-    if (old == null) {
-      if (value == null) return;
+  public static void setProperty(String name, Object value) {
+    ConfigKey key = ConfigKey.getInstance(name);
+    String oldVal = key.getStringValue();
+    String newVal = key.getType().toString(value);
+    if (oldVal == null) {
+      if (newVal == null) return;
     } else {
-      if (old.equals(value)) return;
+      if (oldVal.equals(newVal)) return;
     }
-    
-    if (value == null) {
-      s_props.remove(name);
-    } else {
-      s_props.setProperty(name, value);
-    }
+    key.setValue(value);
     s_dirty = true;
-    if (!s_hold) write();
+    if (!s_hold) ConfigKey.writeConfig();
   }
-  
-  public static void setIntProperty(String name, int value) {
-    setProperty(name, String.valueOf(value));
+    
+  public static void readMetadata(String subsystem, InputStream is) {
+    System.err.println("Config: Reading metadata for " + subsystem);
+    try {
+      Document doc = Util.parseXML(is);
+      XPath xpath = s_xpath.newXPath();
+      NodeList nl = (NodeList) xpath.evaluate("category", 
+          doc.getDocumentElement(), XPathConstants.NODESET);
+      for (int i = 0; i < nl.getLength(); i++) {
+        Element e = (Element) nl.item(i);
+        ConfigCategory.parse(e);
+      }
+    } catch (Exception ex) {
+      System.err.println("Exception reading config metadata for " + subsystem);
+      ex.printStackTrace();
+    }
   }
 
 }

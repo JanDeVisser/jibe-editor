@@ -16,9 +16,7 @@
 
 package net.devisser.jibe;
 
-import com.trolltech.qt.gui.QTextEdit;
 import com.trolltech.qt.gui.QWidget;
-import java.util.*;
 
 /**
  * Description of class, first sentence should be a summary (used for index).
@@ -30,7 +28,6 @@ public abstract class AbstractBuffer implements Buffer {
   //-------------------------------------------------------------------------
   // ATTRIBUTES
   //-------------------------------------------------------------------------
-  private static String __dfcversion = "@(#)$Id: src.java,v 1.27 2006/10/17 14:02:18 artur Exp $";
   
   private int m_index;
   private BufferManager m_bufmgr = null;

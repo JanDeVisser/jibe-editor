@@ -16,17 +16,15 @@
 
 package net.devisser.jibe;
 
-import com.trolltech.qt.gui.QAbstractItemView;
-import com.trolltech.qt.gui.QBrush;
-import com.trolltech.qt.gui.QColor;
+import com.trolltech.qt.gui.QComboBox;
+import com.trolltech.qt.gui.QGridLayout;
 import com.trolltech.qt.gui.QGroupBox;
 import com.trolltech.qt.gui.QHBoxLayout;
-import com.trolltech.qt.gui.QListWidget;
-import com.trolltech.qt.gui.QListWidgetItem;
+import com.trolltech.qt.gui.QLabel;
+import com.trolltech.qt.gui.QLineEdit;
 import com.trolltech.qt.gui.QPushButton;
-import com.trolltech.qt.gui.QVBoxLayout;
+import com.trolltech.qt.gui.QScrollArea;
 import com.trolltech.qt.gui.QWidget;
-import java.util.*;
 
 /**
  * Description of class, first sentence should be a summary (used for index).
@@ -34,27 +32,41 @@ import java.util.*;
  * @version $Revision: 1.27 $ $Date: 2006/10/17 14:02:18 $
  * @author <a href="mailto:customercare@digitalfairway.com">Digital Fairway</a>
  */
-public class BufferList extends AbstractBuffer {
+public class ConfigBuffer extends AbstractBuffer {
   //-------------------------------------------------------------------------
   // ATTRIBUTES
   //-------------------------------------------------------------------------
 
   private QWidget m_top;
-  private QListWidget m_lw;
+  private QComboBox m_categories;
   
   //-------------------------------------------------------------------------
   // CONSTRUCTORS
   //-------------------------------------------------------------------------
   
-  public BufferList() {
+  public ConfigBuffer() {
     super();
     m_top = new QWidget();
         
-    QHBoxLayout box = new QHBoxLayout();
-    m_lw = new QListWidget();
-    m_top.setFocusProxy(m_lw);
-    box.addWidget(m_lw);
+    QGridLayout box = new QGridLayout();
+    
+    QLabel label = new QLabel("&Category: ");
+    box.addWidget(label, 0, 0);
+    m_categories = new QComboBox();
+    label.setBuddy(m_categories);
+    m_categories.setEditable(false);
+    for (ConfigCategory cat : ConfigCategory.getCategories()) {
+      if (!cat.isVisible()) continue;
+      m_categories.addItem(cat.getLabel(), cat.getName());
+    }
+    m_top.setFocusProxy(m_categories);
+    box.addWidget(m_categories, 0, 1);
     m_top.setLayout(box);
+    
+    QScrollArea sa = new QScrollArea();
+    renderConfigKeys(sa);
+    box.addWidget(sa);
+    
     //QWidget b = new QWidget();
     //box.addWidget(b);
     //QVBoxLayout buttons = new QVBoxLayout();
@@ -62,56 +74,20 @@ public class BufferList extends AbstractBuffer {
     
     QGroupBox actions = new QGroupBox("Actions");
     box.addWidget(actions);
-    QVBoxLayout actionbuttons = new QVBoxLayout();
-    QPushButton select = new QPushButton("Switch");
-    QPushButton save = new QPushButton("Save");
+    QHBoxLayout actionbuttons = new QHBoxLayout();
+    QPushButton apply = new QPushButton("Apply");
+    QPushButton reset = new QPushButton("Reset");
     QPushButton close = new QPushButton("Close");
-    actionbuttons.addWidget(select);
-    actionbuttons.addWidget(save);
+    actionbuttons.addWidget(apply);
+    actionbuttons.addWidget(reset);
     actionbuttons.addWidget(close);
     actions.setLayout(actionbuttons);
     
-    /*
-    QGroupBox cvs = new QGroupBox("CVS");
-    buttons.addWidget(cvs);
-    QVBoxLayout cvsbuttons = new QVBoxLayout();
-    QPushButton refresh = new QPushButton("Refresh");
-    QPushButton update = new QPushButton("Update");
-    QPushButton commit = new QPushButton("Commit");
-    QPushButton diff = new QPushButton("Diff");
-    cvsbuttons.addWidget(refresh);
-    cvsbuttons.addWidget(update);
-    cvsbuttons.addWidget(commit);
-    cvsbuttons.addWidget(diff);
-    cvs.setLayout(cvsbuttons);
-    */
-    m_lw.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection);
   }
   
   //-------------------------------------------------------------------------
   // PUBLIC METHODS
   //-------------------------------------------------------------------------
-  
-  public void setBufferManager(BufferManager bufmgr) {
-    super.setBufferManager(bufmgr);
-    Set<String> buffers = bufmgr.getBufferNames();
-    for (String buffer : buffers) {
-      Buffer b = bufmgr.getBuffer(buffer);
-      QListWidgetItem lwi = new QListWidgetItem(buffer, m_lw);
-      QColor color = null;
-      if (b.isDirty()) {
-        color = new QColor("red");
-      } else {
-        switch (b.getVCSStatus()) {
-          case MODIFIED: color = new QColor("blue"); break;
-          case NEW: color = new QColor("green"); break;
-        }
-      }
-      if (color != null) {
-        lwi.setForeground(new QBrush(color));
-      }
-    }
-  }
   
   public QWidget getWidget() {
     return m_top;
@@ -125,11 +101,11 @@ public class BufferList extends AbstractBuffer {
   }
   
   public String getLabel() {
-    return "Buffers";
+    return "Config";
   }
   
   public String getName() {
-    return "Buffer List";
+    return "Configuration";
   }
   
   //-------------------------------------------------------------------------
@@ -139,6 +115,30 @@ public class BufferList extends AbstractBuffer {
   //-------------------------------------------------------------------------
   // PRIVATE METHODS
   //-------------------------------------------------------------------------
+  
+  private void renderConfigKeys(QScrollArea parent) {
+    String catname = (String) m_categories.itemData(m_categories.currentIndex());
+    ConfigCategory cat = ConfigCategory.getInstance(catname);
+    QGridLayout box = new QGridLayout();
+    
+    int row = 0;
+    for (ConfigKey key : cat.getKeys()) {
+      QWidget widget = getWidget(key);
+      if (widget != null) {
+        QLabel label = new QLabel(key.getLabel() + ": ");
+        box.addWidget(label, row, 0);
+        label.setBuddy(widget);
+        box.addWidget(widget, row++, 1);
+      }
+    }
+    parent.setLayout(box);
+  }
+  
+  private QWidget getWidget(ConfigKey key) {
+    QLineEdit ret = new QLineEdit();
+    ret.setText(key.getStringValue());
+    return ret;
+  }
   
   //-------------------------------------------------------------------------
   // STATIC METHODS
