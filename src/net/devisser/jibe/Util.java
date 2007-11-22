@@ -16,17 +16,14 @@
 
 package net.devisser.jibe;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Writer;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.w3c.dom.Element;
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.sun.org.apache.xml.internal.serialize.DOMSerializer;
@@ -45,6 +42,12 @@ public class Util {
   
   public static boolean isEmpty(String s) {
     return (s == null) || (s.length() == 0);
+  }
+  
+  public static boolean asBoolean(String value) {
+    if (Util.isEmpty(value)) return false;
+    value = value.toLowerCase();
+    return "true".equals(value) || "yes".equals(value) || "t".equals(value) || "y".equals(value);
   }
   
   public static Document parseXML(InputStream is) throws IOException, SAXException {

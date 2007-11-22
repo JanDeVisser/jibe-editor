@@ -1,20 +1,19 @@
 package net.devisser.jibe;
 
 import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -26,9 +25,7 @@ import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import com.trolltech.qt.core.QRegExp;
 import com.trolltech.qt.core.Qt;
@@ -343,8 +340,21 @@ public class MIMEType {
           is2.close();
         }
       }
-    } catch (Exception e) {
       
+      File mimedir = new File(Config.getHome(), "mime");
+      if (mimedir.exists() && mimedir.isDirectory()) {
+        File[] mimefiles = mimedir.listFiles(new FilenameFilter() {
+          public boolean accept(File dir, String name) {
+            return name.toLowerCase().endsWith(".xml"); 
+          }
+        });
+        for (File mimefile : mimefiles) {
+          readMIMETypeDefinition(mimefile.getName(), new FileInputStream(mimefile));
+        }
+      }
+    } catch (Exception e) {
+      System.err.println("Exception reading MIME type definitions");
+      e.printStackTrace();
     }
   }
   

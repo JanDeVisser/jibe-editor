@@ -36,11 +36,12 @@ public class Jibe extends QMainWindow {
   public Jibe() {
     m_bufmgr = new BufferManager();
     setupFileMenu();
+    setupEditMenu();
     setupHelpMenu();
     
     setCentralWidget(m_bufmgr);
-    resize(Config.getIntProperty("jibe.mainwindow.width", 640),
-        Config.getIntProperty("jibe.mainwindow.height", 480));
+    resize(Config.getIntProperty("jibe.mainwindow.width"),
+        Config.getIntProperty("jibe.mainwindow.height"));
     setWindowTitle(tr("Jibe - Jibe Is a Better Editor"));
     setWindowIcon(new QIcon(
         "classpath:/com/trolltech/images/qt-logo.png"));
@@ -59,11 +60,15 @@ public class Jibe extends QMainWindow {
     QApplication.aboutQt();
   }
   
+  public void config() {
+    m_bufmgr.singletonBuffer(ConfigBuffer.class);
+  }
+  
   protected void resizeEvent(QResizeEvent ev) {
     QSize s = ev.size();
     Config.hold();
-    Config.setIntProperty("jibe.mainwindow.height", s.height());
-    Config.setIntProperty("jibe.mainwindow.width", s.width());
+    Config.setProperty("jibe.mainwindow.height", s.height());
+    Config.setProperty("jibe.mainwindow.width", s.width());
     Config.write();
   }
   
@@ -113,6 +118,16 @@ public class Jibe extends QMainWindow {
     fileMenu.addAction(quitAct);
   }
   
+  private void setupEditMenu() {
+    QMenu editMenu = new QMenu(tr("&Edit"), this);
+    menuBar().addMenu(editMenu);
+    
+    editMenu.addSeparator();
+    QAction configAct = new QAction(tr("&Preferences"), this);
+    configAct.triggered.connect(this, "config()");
+    editMenu.addAction(configAct);
+  }
+    
   private void setupHelpMenu() {
     QMenu helpMenu = new QMenu(tr("&Help"), this);
     menuBar().addMenu(helpMenu);

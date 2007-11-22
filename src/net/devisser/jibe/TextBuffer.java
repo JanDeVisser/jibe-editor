@@ -17,9 +17,9 @@
 
 package net.devisser.jibe;
 
-import java.util.*;
-import com.trolltech.qt.core.*;
-import com.trolltech.qt.gui.*;
+import com.trolltech.qt.core.QFile;
+import com.trolltech.qt.core.QFileInfo;
+import com.trolltech.qt.gui.QWidget;
 
 
 /**
@@ -32,7 +32,6 @@ public class TextBuffer extends AbstractBuffer {
   //-------------------------------------------------------------------------
   // ATTRIBUTES
   //-------------------------------------------------------------------------
-  private static String __version = "@(#)$Id: src.java,v 1.27 2006/10/17 14:02:18 artur Exp $";
 
   private static int s_untitled = 1;
   
