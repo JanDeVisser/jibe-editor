@@ -17,6 +17,7 @@
 package net.devisser.jibe;
 
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 
 import javax.xml.xpath.XPath;
@@ -29,6 +30,7 @@ import org.w3c.dom.NodeList;
 
 import com.trolltech.qt.gui.QColor;
 import com.trolltech.qt.gui.QFont;
+import java.net.URLClassLoader;
 
 public class Config {
 
@@ -65,6 +67,7 @@ public class Config {
       System.err.println("Exception initializing Jibe home directory " + s_home);
       ee.printStackTrace();      
     }
+    initializeClassLoader();
     
     try {
       readMetadata("Jibe Core", Config.class.getResourceAsStream("/net/devisser/jibe/config.xml"));
@@ -73,6 +76,20 @@ public class Config {
       e.printStackTrace();
     }
     ConfigKey.readConfig();
+  }
+  
+  private static void initializeClassLoader() {
+    final URLClassLoader cl = URLClassLoader.newInstance(new URL[0], Config.class.getClassLoader());
+    File libdir = new File(getHome(), "lib");
+    if (libdir.exists() && libdir.isDirectory()) {
+      libdir.listFiles(new FilenameFilter() {
+
+                public boolean accept(File dir, String name) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+            })
+    }
+    Thread.currentThread().setContextClassLoader(cl);
   }
   
   public static String getHome() {
@@ -108,6 +125,12 @@ public class Config {
     ConfigKey key = ConfigKey.getInstance(name);
     assert key.getType() == ConfigKeyType.FONT;
     return (QFont) key.getValue();
+  }
+  
+  public static File getFileProperty(String name) {
+    ConfigKey key = ConfigKey.getInstance(name);
+    assert key.getType() == ConfigKeyType.FILE;
+    return (File) key.getValue();
   }
   
   public static void hold() {

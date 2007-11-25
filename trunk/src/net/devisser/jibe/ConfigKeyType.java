@@ -2,6 +2,7 @@ package net.devisser.jibe;
 
 import com.trolltech.qt.gui.QColor;
 import com.trolltech.qt.gui.QFont;
+import java.io.File;
 
 public enum ConfigKeyType {
   
@@ -28,6 +29,11 @@ public enum ConfigKeyType {
   FONT("font", QFont.class) {
     public Object toObject(String value) {
       return (value == null) ? null : new QFont(value);
+    }
+  },
+  FILE("file", File.class) {
+    public Object toObject(String value) {
+      return (value == null) ? null : new File(value);
     }
   };
   

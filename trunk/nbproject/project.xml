@@ -3,6 +3,9 @@
     <type>org.netbeans.modules.ant.freeform</type>
     <configuration>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+            <name>jibe</name>
+        </general-data>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
             <!-- Do not use Project Properties customizer when editing this file manually. -->
             <name>jibe</name>
             <properties/>
@@ -12,9 +15,9 @@
                     <type>java</type>
                     <location>src</location>
                 </source-folder>
-                <build-folder>
-                    <location>/data/home/jan/prj/jibe/classes</location>
-                </build-folder>
+                <build-file>
+                    <location>../../../../data/home/jan/prj/jibe/classes</location>
+                </build-file>
             </folders>
             <ide-actions>
                 <action name="build">
@@ -63,7 +66,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src</package-root>
-                <classpath mode="compile">../../../../data/home/jan/qtjambi/qtjambi.jar</classpath>
+                <classpath mode="compile">../../qtjambi/qtjambi.jar</classpath>
                 <built-to>../../../../data/home/jan/prj/jibe/classes</built-to>
                 <source-level>1.5</source-level>
             </compilation-unit>
