@@ -30,41 +30,52 @@ import org.w3c.dom.NodeList;
 
 import com.trolltech.qt.gui.QColor;
 import com.trolltech.qt.gui.QFont;
+import java.net.MalformedURLException;
 import java.net.URLClassLoader;
 
 public class Config {
 
   private static Properties s_props = new Properties();
-  private static String s_home;
+  private static String s_systemhome;
+  private static String s_userhome;
   private static File s_propsfile = null;
   private static boolean s_hold = false;
   private static boolean s_dirty = false;
   private static XPathFactory s_xpath = XPathFactory.newInstance();
 
   static {
-    s_home = System.getProperty("user.home") + "/.jibe";
+    s_systemhome = System.getProperty("jibe.system");
+    if (s_systemhome == null) {
+      if (System.getenv("JIBE_DIR") != null) {
+        s_systemhome = System.getenv("JIBE_DIR");
+      } else {
+        System.err.println("jibe.system not set");
+        System.exit(1);
+      }
+    }
+    s_userhome = System.getProperty("user.home") + "/.jibe";
     if (System.getProperty("jibe.home") != null) {
-      s_home = System.getProperty("jibe.home");
+      s_userhome = System.getProperty("jibe.home");
     } else if (System.getenv("JIBE_HOME") != null) {
-      s_home = System.getenv("JIBE_HOME");
+      s_userhome = System.getenv("JIBE_HOME");
     }
     
     boolean writable = false;
     try {
-      File home = new File(s_home);
+      File home = new File(s_userhome);
       if (home.exists() && !home.isDirectory()) {
-        System.err.println("Jibe home directory " + s_home + " exists, but is not a directory");
+        System.err.println("Jibe home directory " + s_userhome + " exists, but is not a directory");
       } else if (!home.exists()) {
-        System.err.println("Jibe home directory " + s_home + " does not exist. Creating it now");
+        System.err.println("Jibe home directory " + s_userhome + " does not exist. Creating it now");
         home.mkdir();
         writable = true;
       } else if (!home.canWrite()) {
-        System.err.println("Jibe home directory " + s_home + " exists but is not writable");
+        System.err.println("Jibe home directory " + s_userhome + " exists but is not writable");
       } else {
         writable = true;
       }
     } catch (Exception ee) {
-      System.err.println("Exception initializing Jibe home directory " + s_home);
+      System.err.println("Exception initializing Jibe home directory " + s_userhome);
       ee.printStackTrace();      
     }
     initializeClassLoader();
@@ -79,21 +90,41 @@ public class Config {
   }
   
   private static void initializeClassLoader() {
-    final URLClassLoader cl = URLClassLoader.newInstance(new URL[0], Config.class.getClassLoader());
-    File libdir = new File(getHome(), "lib");
-    if (libdir.exists() && libdir.isDirectory()) {
-      libdir.listFiles(new FilenameFilter() {
-
-                public boolean accept(File dir, String name) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-            })
-    }
+    File libdir = new File(getSystemHome(), "lib");
+    List<URL> jarURLs = new ArrayList<URL>(getJars(libdir));
+    jarURLs.addAll(getJars(new File(getUserHome(), "lib")));
+    System.out.println("Jars added to classloader: " + jarURLs);
+    URLClassLoader cl = URLClassLoader.newInstance(jarURLs.toArray(new URL[0]), Config.class.getClassLoader());
     Thread.currentThread().setContextClassLoader(cl);
   }
+
+  protected static List<URL> getJars(File libdir) {
+    List<URL> ret = new ArrayList<URL>();
+
+    if (libdir.exists() && libdir.isDirectory()) {
+      File[] jars = libdir.listFiles(
+        new FilenameFilter() {
+          public boolean accept(File dir, String name) {
+            return name.toLowerCase().endsWith(".jar");
+          }
+        });
+      for (File j : jars) {
+        try {
+          ret.add(j.toURI().toURL());
+        } catch (MalformedURLException mfue) {
+          System.err.println("What? " + j + ".toURI().toURL() failed?");
+        }
+      }
+    }
+    return Collections.unmodifiableList(ret);
+  }
   
-  public static String getHome() {
-    return s_home;
+  public static String getSystemHome() {
+    return s_systemhome;
+  }
+  
+  public static String getUserHome() {
+    return s_userhome;
   }
   
   public static String getProperty(String name) {

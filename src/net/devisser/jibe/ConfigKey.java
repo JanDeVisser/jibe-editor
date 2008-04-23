@@ -127,9 +127,9 @@ public class ConfigKey {
   }
   
   public static void writeConfig() {
-    File home = new File(Config.getHome());
+    File home = new File(Config.getUserHome());
     if (!home.exists() || !home.isDirectory() || !home.canWrite()) {
-      System.err.println("Cannot write config to home directory " + Config.getHome());
+      System.err.println("Cannot write config to user home directory " + Config.getUserHome());
       return;
     }
     File propsfile = new File(home, "jibe.properties");
@@ -156,9 +156,9 @@ public class ConfigKey {
   }
   
   public static void readConfig() {
-    File home = new File(Config.getHome());
+    File home = new File(Config.getUserHome());
     if (!home.exists() || !home.isDirectory() || !home.canRead()) {
-      System.err.println("Cannot read config from home directory " + Config.getHome());
+      System.err.println("Cannot read config from user home directory " + Config.getUserHome());
       return;
     }
     File propsfile = new File(home, "jibe.properties");
