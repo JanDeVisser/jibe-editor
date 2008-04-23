@@ -16,6 +16,7 @@
 
 package net.devisser.jibe;
 
+import com.trolltech.qt.core.Qt;
 import com.trolltech.qt.gui.QAbstractItemView;
 import com.trolltech.qt.gui.QBrush;
 import com.trolltech.qt.gui.QColor;
@@ -86,6 +87,10 @@ public class BufferList extends AbstractBuffer {
     cvs.setLayout(cvsbuttons);
     */
     m_lw.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection);
+    
+    m_lw.itemDoubleClicked.connect(this, "select()");
+    select.pressed.connect(this, "select()");
+    close.pressed.connect(this, "close()");
   }
   
   //-------------------------------------------------------------------------
@@ -94,23 +99,7 @@ public class BufferList extends AbstractBuffer {
   
   public void setBufferManager(BufferManager bufmgr) {
     super.setBufferManager(bufmgr);
-    Set<String> buffers = bufmgr.getBufferNames();
-    for (String buffer : buffers) {
-      Buffer b = bufmgr.getBuffer(buffer);
-      QListWidgetItem lwi = new QListWidgetItem(buffer, m_lw);
-      QColor color = null;
-      if (b.isDirty()) {
-        color = new QColor("red");
-      } else {
-        switch (b.getVCSStatus()) {
-          case MODIFIED: color = new QColor("blue"); break;
-          case NEW: color = new QColor("green"); break;
-        }
-      }
-      if (color != null) {
-        lwi.setForeground(new QBrush(color));
-      }
-    }
+    populate();
   }
   
   public QWidget getWidget() {
@@ -131,6 +120,26 @@ public class BufferList extends AbstractBuffer {
   public String getName() {
     return "Buffer List";
   }
+
+  @Override
+  public void activate() {
+    super.activate();
+    populate();
+  }
+  
+  //-------------------------------------------------------------------------
+  // SLOTS
+  //-------------------------------------------------------------------------
+  
+  public void select() {
+    getBufferManager().select((Buffer) m_lw.currentItem().data(Qt.ItemDataRole.UserRole));
+  }
+  
+  public void close() {
+    getBufferManager().closeBuffer((Buffer) m_lw.currentItem().data(Qt.ItemDataRole.UserRole));
+    populate();
+  }
+  
   
   //-------------------------------------------------------------------------
   // PROTECTED METHODS
@@ -139,6 +148,29 @@ public class BufferList extends AbstractBuffer {
   //-------------------------------------------------------------------------
   // PRIVATE METHODS
   //-------------------------------------------------------------------------
+  
+  private void populate(){
+    m_lw.clear();
+    Set<String> buffers = getBufferManager().getBufferNames();
+    for (String buffer : buffers) {
+      Buffer b = getBufferManager().getBuffer(buffer);
+      QListWidgetItem lwi = new QListWidgetItem(buffer, m_lw);
+      lwi.setData(Qt.ItemDataRole.UserRole, b);
+      QColor color = null;
+      if (b.isDirty()) {
+        color = new QColor("red");
+      } else {
+        switch (b.getVCSStatus()) {
+          case MODIFIED: color = new QColor("blue"); break;
+          case NEW: color = new QColor("green"); break;
+        }
+      }
+      if (color != null) {
+        lwi.setForeground(new QBrush(color));
+      }
+    }
+  }
+  
   
   //-------------------------------------------------------------------------
   // STATIC METHODS

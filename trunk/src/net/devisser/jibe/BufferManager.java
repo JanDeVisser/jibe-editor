@@ -104,11 +104,16 @@ public class BufferManager extends QTabWidget {
     tabBar().setTabTextColor(ix, (buffer.isDirty()) ? QColor.red : QColor.black);
   }
   
+  public void select(Buffer buffer) {
+    tabBar().setCurrentIndex(buffer.getIndex());
+  }
+  
   //-------------------------------------------------------------------------
   // SLOTS
   //-------------------------------------------------------------------------
   
   public void bufferSwitch() {
+    currentBuffer().activate();
     currentWidget().setFocus();
   }
   
@@ -157,12 +162,16 @@ public class BufferManager extends QTabWidget {
   }
   
   public void closeBuffer() {
-    Buffer cur = currentBuffer();
-    if (cur != null) {
-      removeTab(currentIndex());
-      m_buffers.remove(cur.getName());
-      cur.dispose();
-    }
+    closeBuffer(currentBuffer());
+  }
+  
+  public void closeBuffer(Buffer buffer) {
+    if (buffer != null) {
+      removeTab(buffer.getIndex());
+      m_buffers.remove(buffer.getName());
+      m_buflist.remove(buffer.getIndex());
+      buffer.dispose();
+    }    
   }
   
   //-------------------------------------------------------------------------

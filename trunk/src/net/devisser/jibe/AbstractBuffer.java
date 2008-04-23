@@ -74,6 +74,9 @@ public abstract class AbstractBuffer implements Buffer {
     m_index = index;
   }
   
+  public void activate() {
+  }
+  
   //-------------------------------------------------------------------------
   // PROTECTED METHODS
   //-------------------------------------------------------------------------

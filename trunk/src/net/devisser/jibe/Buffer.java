@@ -45,5 +45,7 @@ public interface Buffer {
   void dispose();
   
   void setBufferManager(BufferManager bufmgr);
+  
+  void activate();
     
 }

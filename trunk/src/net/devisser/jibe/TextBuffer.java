@@ -93,6 +93,7 @@ public class TextBuffer extends AbstractBuffer {
         try {
           f.write(m_textedit.toPlainText().getBytes());
           m_dirty = false;
+          if (getBufferManager() != null) getBufferManager().markDirty(this);
         } finally {
           f.close();
         }

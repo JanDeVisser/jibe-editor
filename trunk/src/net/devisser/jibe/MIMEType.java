@@ -341,7 +341,18 @@ public class MIMEType {
         }
       }
       
-      File mimedir = new File(Config.getHome(), "mime");
+      File mimedir = new File(Config.getSystemHome(), "mime");
+      if (mimedir.exists() && mimedir.isDirectory()) {
+        File[] mimefiles = mimedir.listFiles(new FilenameFilter() {
+          public boolean accept(File dir, String name) {
+            return name.toLowerCase().endsWith(".xml"); 
+          }
+        });
+        for (File mimefile : mimefiles) {
+          readMIMETypeDefinition(mimefile.getName(), new FileInputStream(mimefile));
+        }
+      }
+      mimedir = new File(Config.getUserHome(), "mime");
       if (mimedir.exists() && mimedir.isDirectory()) {
         File[] mimefiles = mimedir.listFiles(new FilenameFilter() {
           public boolean accept(File dir, String name) {
