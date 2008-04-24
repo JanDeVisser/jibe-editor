@@ -14,7 +14,7 @@
  ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  **
  ****************************************************************************/
-
+ 
 package net.devisser.jibe;
 
 import com.trolltech.qt.core.*;
@@ -23,6 +23,7 @@ import com.trolltech.qt.gui.*;
 public class Jibe extends QMainWindow {
   
   private BufferManager m_bufmgr;
+  private PluginManager m_pluginmgr;
   
   public static void main(String args[]) {
     QApplication.initialize(args);
@@ -38,6 +39,7 @@ public class Jibe extends QMainWindow {
     setupFileMenu();
     setupEditMenu();
     setupHelpMenu();
+    m_pluginmgr = new PluginManager(this);
     
     setCentralWidget(m_bufmgr);
     resize(Config.getIntProperty("jibe.mainwindow.width"),
