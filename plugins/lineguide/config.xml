@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin classname="net.devisser.jibe.lineguide.LineGuide">
+	<category name="editor" label="Text Editor">
+		<key name="jibe.editor.guide.column" type="integer" default="80" range="0-256">
+			The column in which to show the right line length guide. A value of zero
+			means no guide will be shown
+		</key>
+		<key name="jibe.editor.guide.color" type="color" default="lightgray">
+			The color for the right line length guide.
+		</key>
+	</category>
+
+</plugin>
