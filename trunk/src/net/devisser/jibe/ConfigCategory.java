@@ -84,7 +84,7 @@ public class ConfigCategory implements Comparable<ConfigCategory> {
       for (int i = 0; i < nl.getLength(); i++) {
         e = (Element) nl.item(i);
         try {
-          ConfigKey key = ConfigKey.parse(ret, e);
+          ConfigKey key = Config.getInstance().parseKeyDefinition(ret, e);
           ret.m_keys.put(key.getName(), key);
         } catch (Exception ex) {
           System.err.println("Exception parsing config key in category " + ret.getName());

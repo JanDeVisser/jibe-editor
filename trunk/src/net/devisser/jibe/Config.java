@@ -17,7 +17,6 @@
 package net.devisser.jibe;
 
 import java.io.*;
-import java.net.URL;
 import java.util.*;
 
 import javax.xml.xpath.XPath;
@@ -26,59 +25,38 @@ import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
 import com.trolltech.qt.gui.QColor;
 import com.trolltech.qt.gui.QFont;
-import java.net.MalformedURLException;
-import java.net.URLClassLoader;
 
 public class Config {
 
-  private static Properties s_props = new Properties();
-  private static String s_systemhome;
-  private static String s_userhome;
-  private static File s_propsfile = null;
-  private static boolean s_hold = false;
-  private static boolean s_dirty = false;
-  private static XPathFactory s_xpath = XPathFactory.newInstance();
+  private Jibe m_jibe;
+  private Properties m_props = new Properties();
+  private String m_systemhome;
+  private String m_userhome;
+  private File m_propsfile = null;
+  private boolean m_hold = false;
+  private boolean m_dirty = false;
+  private XPathFactory m_xpath = XPathFactory.newInstance();
+  private ClassLoader m_classloader = null;
+  
+  private Map<String, ConfigKey> m_keys = new HashMap<String, ConfigKey>();
+  
+  private static Config s_singleton = null;
 
-  static {
-    s_systemhome = System.getProperty("jibe.system");
-    if (s_systemhome == null) {
-      if (System.getenv("JIBE_DIR") != null) {
-        s_systemhome = System.getenv("JIBE_DIR");
-      } else {
-        System.err.println("jibe.system not set");
-        System.exit(1);
-      }
+  public Config(Jibe jibe) {
+    if (s_singleton != null) {
+      throw new RuntimeException("Config is a singleton");
     }
-    s_userhome = System.getProperty("user.home") + "/.jibe";
-    if (System.getProperty("jibe.home") != null) {
-      s_userhome = System.getProperty("jibe.home");
-    } else if (System.getenv("JIBE_HOME") != null) {
-      s_userhome = System.getenv("JIBE_HOME");
-    }
+    m_jibe = jibe;
     
-    boolean writable = false;
-    try {
-      File home = new File(s_userhome);
-      if (home.exists() && !home.isDirectory()) {
-        System.err.println("Jibe home directory " + s_userhome + " exists, but is not a directory");
-      } else if (!home.exists()) {
-        System.err.println("Jibe home directory " + s_userhome + " does not exist. Creating it now");
-        home.mkdir();
-        writable = true;
-      } else if (!home.canWrite()) {
-        System.err.println("Jibe home directory " + s_userhome + " exists but is not writable");
-      } else {
-        writable = true;
-      }
-    } catch (Exception ee) {
-      System.err.println("Exception initializing Jibe home directory " + s_userhome);
-      ee.printStackTrace();      
-    }
-    initializeClassLoader();
+    m_systemhome = System.getProperty("jibe.system");
+    assert m_systemhome != null;
+    m_userhome = System.getProperty("jibe.home");
+    assert m_userhome != null;
     
     try {
       readMetadata("Jibe Core", Config.class.getResourceAsStream("/net/devisser/jibe/config.xml"));
@@ -86,98 +64,73 @@ public class Config {
       System.err.println("Exception reading config metadata");
       e.printStackTrace();
     }
-    ConfigKey.readConfig();
+    readConfig();
+    s_singleton = this;
   }
   
-  private static void initializeClassLoader() {
-    File libdir = new File(getSystemHome(), "lib");
-    List<URL> jarURLs = new ArrayList<URL>(getJars(libdir));
-    jarURLs.addAll(getJars(new File(getUserHome(), "lib")));
-    System.out.println("Jars added to classloader: " + jarURLs);
-    URLClassLoader cl = URLClassLoader.newInstance(jarURLs.toArray(new URL[0]), Config.class.getClassLoader());
-    Thread.currentThread().setContextClassLoader(cl);
-  }
-
-  protected static List<URL> getJars(File libdir) {
-    List<URL> ret = new ArrayList<URL>();
-
-    if (libdir.exists() && libdir.isDirectory()) {
-      File[] jars = libdir.listFiles(
-        new FilenameFilter() {
-          public boolean accept(File dir, String name) {
-            return name.toLowerCase().endsWith(".jar");
-          }
-        });
-      for (File j : jars) {
-        try {
-          ret.add(j.toURI().toURL());
-        } catch (MalformedURLException mfue) {
-          System.err.println("What? " + j + ".toURI().toURL() failed?");
-        }
-      }
-    }
-    return Collections.unmodifiableList(ret);
+  public Jibe getJibe() {
+    return m_jibe;
   }
   
-  public static String getSystemHome() {
-    return s_systemhome;
+  public String getSystemHome() {
+    return m_systemhome;
   }
   
-  public static String getUserHome() {
-    return s_userhome;
+  public String getUserHome() {
+    return m_userhome;
   }
   
-  public static String getProperty(String name) {
-    ConfigKey key = ConfigKey.getInstance(name);
+  public String getProperty(String name) {
+    ConfigKey key = getKey(name);
     return key.getStringValue();
   }
   
-  public static int getIntProperty(String name) {
-    ConfigKey key = ConfigKey.getInstance(name);
+  public int getIntProperty(String name) {
+    ConfigKey key = getKey(name);
     assert key.getType() == ConfigKeyType.INTEGER;
     Integer ret = (Integer) key.getValue();
     return (ret != null) ? ret : 0;
   }
   
-  public static boolean getBooleanProperty(String name) {
-    ConfigKey key = ConfigKey.getInstance(name);
+  public boolean getBooleanProperty(String name) {
+    ConfigKey key = getKey(name);
     assert key.getType() == ConfigKeyType.BOOLEAN;
     Boolean ret = (Boolean) key.getValue();
     return (ret != null) ? ret : false;
   }
   
-  public static QColor getColorProperty(String name) {
-    ConfigKey key = ConfigKey.getInstance(name);
+  public QColor getColorProperty(String name) {
+    ConfigKey key = getKey(name);
     assert key.getType() == ConfigKeyType.COLOR;
     return (QColor) key.getValue();
   }
 
-  public static QFont getFontProperty(String name) {
-    ConfigKey key = ConfigKey.getInstance(name);
+  public QFont getFontProperty(String name) {
+    ConfigKey key = getKey(name);
     assert key.getType() == ConfigKeyType.FONT;
     return (QFont) key.getValue();
   }
   
-  public static File getFileProperty(String name) {
-    ConfigKey key = ConfigKey.getInstance(name);
+  public File getFileProperty(String name) {
+    ConfigKey key = getKey(name);
     assert key.getType() == ConfigKeyType.FILE;
     return (File) key.getValue();
   }
   
-  public static void hold() {
-    s_hold = true;
+  public void hold() {
+    m_hold = true;
   }
   
-  public static void write() {
-    s_hold = false;
-    if (s_dirty) {
-      ConfigKey.writeConfig();
+  public void write() {
+    m_hold = false;
+    if (m_dirty) {
+      writeConfig();
     }
-    s_dirty = false;
+    m_dirty = false;
   }
   
-  public static void setProperty(String name, Object value) {
-    ConfigKey key = ConfigKey.getInstance(name);
+  public void setProperty(String name, Object value) {
+    ConfigKey key = getKey(name);
     String oldVal = key.getStringValue();
     String newVal = key.getType().toString(value);
     if (oldVal == null) {
@@ -186,15 +139,24 @@ public class Config {
       if (oldVal.equals(newVal)) return;
     }
     key.setValue(value);
-    s_dirty = true;
-    if (!s_hold) ConfigKey.writeConfig();
+    m_dirty = true;
+    if (!m_hold) writeConfig();
   }
     
-  public static void readMetadata(String subsystem, InputStream is) {
-    System.err.println("Config: Reading metadata for " + subsystem);
+  public void readMetadata(String subsystem, InputStream is) {
     try {
       Document doc = Util.parseXML(is);
-      XPath xpath = s_xpath.newXPath();
+      readMetadata(subsystem, doc);
+    } catch (Exception ex) {
+      System.err.println("Exception reading config metadata for " + subsystem);
+      ex.printStackTrace();
+    }
+  }
+
+  public void readMetadata(String subsystem, Document doc) {
+    System.err.println("Config: Reading metadata for " + subsystem);
+    try {
+      XPath xpath = m_xpath.newXPath();
       NodeList nl = (NodeList) xpath.evaluate("category", 
           doc.getDocumentElement(), XPathConstants.NODESET);
       for (int i = 0; i < nl.getLength(); i++) {
@@ -207,4 +169,106 @@ public class Config {
     }
   }
 
+  private static final List<String> RESERVED_ATTRS = Arrays.asList(
+      "name", "type", "default", "visible", "label");
+  
+  public ConfigKey parseKeyDefinition(ConfigCategory category, Element e) {
+    String name = e.getAttribute("name");
+    if (Util.isEmpty(name)) {
+      throw new RuntimeException("Config element without name");
+    }
+    ConfigKeyType type = ConfigKeyType.getInstance(e.getAttribute("type"));
+    String defval = e.getAttribute("default");
+    ConfigKey ret = new ConfigKey(category, name, type, defval);
+    ret.setDescription(e.getTextContent());
+    
+    String visible = e.getAttribute("visible");
+    if (Util.notEmpty(visible)) {
+      ret.isVisible((Boolean) ConfigKeyType.BOOLEAN.toObject(visible));
+    }
+
+    String label = e.getAttribute("label");
+    if (Util.notEmpty(label)) {
+      ret.setLabel(label);
+    }
+
+    NamedNodeMap attrs = e.getAttributes();
+    for (int i = 0; i < attrs.getLength(); i++) {
+      String attr = attrs.item(i).getNodeName();
+      if (RESERVED_ATTRS.contains(attr)) continue;
+      ret.setAttribute(attr, attrs.item(i).getNodeValue());
+    }
+    m_keys.put(name, ret);
+    return ret;
+  }
+  
+  protected synchronized ConfigKey getKey(String name) {
+    ConfigKey ret = m_keys.get(name);
+    if (ret == null) {
+      throw new RuntimeException("Config key " + name + " not is not defined");
+    }
+    return ret;
+  }
+  
+  protected void writeConfig() {
+    File home = new File(getUserHome());
+    if (!home.exists() || !home.isDirectory() || !home.canWrite()) {
+      throw new RuntimeException("Cannot write config to user home directory " + getUserHome());
+    }
+    File propsfile = new File(home, "jibe.properties");
+    if (!propsfile.canWrite()) {
+      throw new RuntimeException("Cannot write config to " + propsfile.getPath());
+    }
+    Properties props = new Properties();
+    for (ConfigKey key : m_keys.values()) {
+      props.put(key.getName(), key.getStringValue());
+    }
+    
+    try {
+      FileOutputStream fos = new FileOutputStream(propsfile);
+      try {
+        props.store(fos, null);
+      } finally {
+        fos.close();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("Cannot write config to " + propsfile.getPath());      
+    }
+  }
+  
+  public void readConfig() {
+    File home = new File(getUserHome());
+    if (!home.exists() || !home.isDirectory() || !home.canRead()) {
+      throw new RuntimeException("Cannot read config from user home directory " + getUserHome());
+    }
+    File propsfile = new File(home, "jibe.properties");
+    if (!propsfile.exists() || !propsfile.canRead()) {
+      throw new RuntimeException("Cannot read config from " + propsfile.getPath());
+    }
+    Properties props = new Properties();
+    try {
+      FileInputStream fis = new FileInputStream(propsfile);
+      try {
+        props.load(fis);
+      } finally {
+        fis.close();
+      }
+      for (Iterator iter = props.keySet().iterator(); iter.hasNext(); ) {
+        String keyname = (String) iter.next();
+        ConfigKey key = m_keys.get(keyname);
+        if (key == null) {
+          key = new ConfigKey(ConfigCategory.getInstance("lost+found"), keyname, ConfigKeyType.STRING, null);
+        }
+        key.setValue(props.getProperty(keyname));
+      }
+    } catch (Exception e) {
+      System.err.println("Exception reading " + propsfile);
+      e.printStackTrace();
+    }    
+  }
+  
+  public static Config getInstance() {
+    return s_singleton;
+  }
 }

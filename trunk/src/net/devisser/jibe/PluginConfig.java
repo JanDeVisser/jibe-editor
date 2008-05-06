@@ -22,7 +22,7 @@ public class PluginConfig {
       Document doc = Util.parseXML(is);
       Element elem = doc.getDocumentElement();
       m_classname = elem.getAttribute("classname");
-      Config.readMetadata(name, is);
+      Config.getInstance().readMetadata(name, doc);
     } catch (Exception ex) {
       ex.printStackTrace();
     }

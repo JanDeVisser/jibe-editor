@@ -19,31 +19,33 @@ package net.devisser.jibe;
 
 import com.trolltech.qt.core.*;
 import com.trolltech.qt.gui.*;
+import java.util.List;
 
 public class Jibe extends QMainWindow {
   
+  private Config m_config;
   private BufferManager m_bufmgr;
   private PluginManager m_pluginmgr;
   
-  public static void main(String args[]) {
-    QApplication.initialize(args);
-    
+  public static void main(List<String> args) {
+    QApplication.initialize(args.toArray(new String[0]));
     Jibe jibe = new Jibe();
     jibe.show();
-    
     QApplication.exec();
   }
   
   public Jibe() {
-    m_bufmgr = new BufferManager();
+    m_config = new Config(this);
+    m_bufmgr = new BufferManager(this);
     setupFileMenu();
     setupEditMenu();
     setupHelpMenu();
+    new JibeJSBridge(this);
     m_pluginmgr = new PluginManager(this);
     
     setCentralWidget(m_bufmgr);
-    resize(Config.getIntProperty("jibe.mainwindow.width"),
-        Config.getIntProperty("jibe.mainwindow.height"));
+    resize(m_config.getIntProperty("jibe.mainwindow.width"),
+        m_config.getIntProperty("jibe.mainwindow.height"));
     setWindowTitle(tr("Jibe - Jibe Is a Better Editor"));
     setWindowIcon(new QIcon(
         "classpath:/com/trolltech/images/qt-logo.png"));
@@ -66,12 +68,24 @@ public class Jibe extends QMainWindow {
     m_bufmgr.singletonBuffer(ConfigBuffer.class);
   }
   
+  public BufferManager getBufferManager() {
+    return m_bufmgr;
+  }
+  
+  public PluginManager getPluginManager() {
+    return m_pluginmgr;
+  }
+  
+  public Config getConfig() {
+    return m_config;
+  }
+  
   protected void resizeEvent(QResizeEvent ev) {
     QSize s = ev.size();
-    Config.hold();
-    Config.setProperty("jibe.mainwindow.height", s.height());
-    Config.setProperty("jibe.mainwindow.width", s.width());
-    Config.write();
+    m_config.hold();
+    m_config.setProperty("jibe.mainwindow.height", s.height());
+    m_config.setProperty("jibe.mainwindow.width", s.width());
+    m_config.write();
   }
   
   public void bufferSwitch() {

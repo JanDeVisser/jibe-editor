@@ -47,7 +47,7 @@ public class TextBuffer extends AbstractBuffer {
   public TextBuffer(String name) {
     super();
     if (Util.isEmpty(name)) name = null;
-    m_textedit = new JibeTextEdit();
+    m_textedit = new JibeTextEdit(this);
     
     new Highlighter(m_textedit.document(), MIMEType.getInstanceForName(name));
     m_textedit.textChanged.connect(this, "textChanged()");
