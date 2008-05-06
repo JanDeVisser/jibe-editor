@@ -24,14 +24,15 @@ import net.devisser.jibe.TextEditListener;
 public class LineGuide implements Plugin, TextEditListener {
 
   private int m_guidepx = 0;
+  private QColor m_color = null;
   
   public void initialize(Jibe jibe, PluginConfig config) {
     QFont font = new QFont();
-    font.setFamily(Config.getProperty("jibe.editor.font"));
+    font.setFamily(jibe.getConfig().getProperty("jibe.editor.font"));
     font.setFixedPitch(true);
-    font.setPointSize(Config.getIntProperty("jibe.editor.fontsize"));
+    font.setPointSize(jibe.getConfig().getIntProperty("jibe.editor.fontsize"));
     
-    int guideat = Config.getIntProperty("jibe.editor.guide.column");
+    int guideat = jibe.getConfig().getIntProperty("jibe.editor.guide.column");
     if (guideat > 0) {
       StringBuffer sb = new StringBuffer();
       while (sb.length() < guideat) sb.append('W');
@@ -40,6 +41,7 @@ public class LineGuide implements Plugin, TextEditListener {
     } else {
       m_guidepx = 0;
     }
+    m_color = new QColor(Config.getInstance().getProperty("jibe.editor.guide.color"));
     jibe.getBufferManager().registerTextEditListener(this);
   }
   
@@ -51,7 +53,7 @@ public class LineGuide implements Plugin, TextEditListener {
     if (m_guidepx > 0) {
       QPainter p = new QPainter();
       p.begin(te.viewport());
-      p.setPen(new QColor(Config.getProperty("jibe.editor.guide.color")));
+      p.setPen(new QColor(m_color));
       p.drawLine(m_guidepx, 0, m_guidepx, te.height());
       p.end();
     }
