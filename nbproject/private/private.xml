@@ -1,4 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
+        <file>file:/home/jan/prj/jibe-editor/build.xml</file>
+        <file>file:/home/jan/prj/jibe-editor/plugins/lineguide/config.xml</file>
+        <file>file:/home/jan/prj/jibe-editor/plugins/lineguide/net/devisser/jibe/lineguide/LineGuide.java</file>
+        <file>file:/home/jan/prj/jibe-editor/src/net/devisser/jibe/AbstractBuffer.java</file>
+        <file>file:/home/jan/prj/jibe-editor/src/net/devisser/jibe/BufferManager.java</file>
+        <file>file:/home/jan/prj/jibe-editor/src/net/devisser/jibe/Config.java</file>
+        <file>file:/home/jan/prj/jibe-editor/src/net/devisser/jibe/ConfigCategory.java</file>
+        <file>file:/home/jan/prj/jibe-editor/src/net/devisser/jibe/ConfigKey.java</file>
+        <file>file:/home/jan/prj/jibe-editor/src/net/devisser/jibe/Jibe.java</file>
+        <file>file:/home/jan/prj/jibe-editor/src/net/devisser/jibe/JibeJSBridge.java</file>
+        <file>file:/home/jan/prj/jibe-editor/src/net/devisser/jibe/JibeTextEdit.java</file>
+        <file>file:/home/jan/prj/jibe-editor/src/net/devisser/jibe/MIMEType.java</file>
+        <file>file:/home/jan/prj/jibe-editor/src/net/devisser/jibe/Plugin.java</file>
+        <file>file:/home/jan/prj/jibe-editor/src/net/devisser/jibe/PluginConfig.java</file>
+        <file>file:/home/jan/prj/jibe-editor/src/net/devisser/jibe/PluginManager.java</file>
+        <file>file:/home/jan/prj/jibe-editor/src/net/devisser/jibe/TextBuffer.java</file>
+        <file>file:/home/jan/prj/jibe-editor/src/net/devisser/jibe/TextEditListener.java</file>
+        <file>file:/home/jan/prj/jibe-editor/src/net/devisser/jibe/Util.java</file>
+        <file>file:/home/jan/prj/jibe-editor/src/net/devisser/jibe/config.xml</file>
+        <file>file:/home/jan/prj/jibe-editor/src/net/devisser/jibe/main/Main.java</file>
+    </open-files>
 </project-private>
