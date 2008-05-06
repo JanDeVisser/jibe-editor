@@ -23,18 +23,25 @@ import java.io.Writer;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
-
-import com.sun.org.apache.xml.internal.serialize.DOMSerializer;
-import com.sun.org.apache.xml.internal.serialize.Method;
-import com.sun.org.apache.xml.internal.serialize.OutputFormat;
-import com.sun.org.apache.xml.internal.serialize.SerializerFactory;
 
 public class Util {
 
   private static DocumentBuilderFactory s_dom_factory =
     DocumentBuilderFactory.newInstance();
+  
+  private static TransformerFactory s_xformer_factory =
+    TransformerFactory.newInstance();
+
 
   public static boolean notEmpty(String s) {
     return (s != null) && (s.length() > 0);
@@ -60,13 +67,16 @@ public class Util {
   }
   
   public static void toXML(Document doc, Writer w, boolean indent) throws IOException {
-    OutputFormat of = new OutputFormat();
-    of.setIndenting(indent);
-    of.setEncoding( "UTF-8" );
-    DOMSerializer serializer = SerializerFactory.getSerializerFactory(Method.XML)
-      .makeSerializer( w, of )
-      .asDOMSerializer();
-    serializer.serialize(doc.getDocumentElement());
+    try {
+      Source source = new DOMSource(doc);
+      Result result = new StreamResult(w);
+      Transformer xformer = s_xformer_factory.newTransformer();
+      xformer.transform(source, result);
+    } catch (TransformerConfigurationException e) {
+      throw new RuntimeException("Configuration Exception writing XML: " + e);
+    } catch (TransformerException e) {
+      throw new RuntimeException("Exception writing XML: " + e);
+    }
   }
   
   static {

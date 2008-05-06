@@ -341,7 +341,7 @@ public class MIMEType {
         }
       }
       
-      File mimedir = new File(Config.getSystemHome(), "mime");
+      File mimedir = new File(Config.getInstance().getSystemHome(), "mime");
       if (mimedir.exists() && mimedir.isDirectory()) {
         File[] mimefiles = mimedir.listFiles(new FilenameFilter() {
           public boolean accept(File dir, String name) {
@@ -352,7 +352,7 @@ public class MIMEType {
           readMIMETypeDefinition(mimefile.getName(), new FileInputStream(mimefile));
         }
       }
-      mimedir = new File(Config.getUserHome(), "mime");
+      mimedir = new File(Config.getInstance().getUserHome(), "mime");
       if (mimedir.exists() && mimedir.isDirectory()) {
         File[] mimefiles = mimedir.listFiles(new FilenameFilter() {
           public boolean accept(File dir, String name) {

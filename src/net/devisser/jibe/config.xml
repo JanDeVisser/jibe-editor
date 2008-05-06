@@ -11,12 +11,5 @@
 		<key name="jibe.editor.fontsize" type="integer" default="10" range="6-24">
 			The font size used in the text editor buffers
 		</key>
-		<key name="jibe.editor.guide.column" type="integer" default="80" range="0-256">
-			The column in which to show the right line length guide. A value of zero
-			means no guide will be shown
-		</key>
-		<key name="jibe.editor.guide.color" type="color" default="lightgray">
-			The color for the right line length guide.
-		</key>
 	</category>
 </config>

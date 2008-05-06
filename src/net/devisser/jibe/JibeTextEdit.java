@@ -34,33 +34,23 @@ public class JibeTextEdit extends QTextEdit {
   // ATTRIBUTES
   //-------------------------------------------------------------------------
 
-  private int m_guidepx = 0;
+  private TextBuffer m_buffer;
   
   
   //-------------------------------------------------------------------------
   // CONSTRUCTORS
   //-------------------------------------------------------------------------
   
-  public JibeTextEdit() {
+  public JibeTextEdit(TextBuffer buffer) {
     super();
+    m_buffer = buffer;
     QFont font = new QFont();
-    font.setFamily(Config.getProperty("jibe.editor.font"));
+    font.setFamily(buffer.getBufferManager().getJibe().getConfig().getProperty("jibe.editor.font"));
     font.setFixedPitch(true);
-    font.setPointSize(Config.getIntProperty("jibe.editor.fontsize"));
+    font.setPointSize(buffer.getBufferManager().getJibe().getConfig().getIntProperty("jibe.editor.fontsize"));
     
     setLineWrapMode(QTextEdit.LineWrapMode.NoWrap);
-    setFont(font);
-    
-    int guideat = Config.getIntProperty("jibe.editor.guide.column");
-    if (guideat > 0) {
-      StringBuffer sb = new StringBuffer();
-      while (sb.length() < guideat) sb.append('W');
-      QFontMetrics fm = new QFontMetrics(font);
-      m_guidepx = fm.width(sb.toString()) + 2;
-    } else {
-      m_guidepx = 0;
-    }
-    
+    setFont(font);    
   }
   
   //-------------------------------------------------------------------------
@@ -69,12 +59,8 @@ public class JibeTextEdit extends QTextEdit {
   
   public void paintEvent(QPaintEvent event) {
     super.paintEvent(event);
-    if (m_guidepx > 0) {
-      QPainter p = new QPainter();
-      p.begin(viewport());
-      p.setPen(new QColor(Config.getProperty("jibe.editor.guide.color")));
-      p.drawLine(m_guidepx, 0, m_guidepx, height());
-      p.end();
+    for (TextEditListener listener : m_buffer.getBufferManager().getTextEditListeners()) {
+      listener.paintEvent(event, this);
     }
   }
   

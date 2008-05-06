@@ -5,14 +5,12 @@
 
 package net.devisser.jibe;
 
+import com.trolltech.qt.gui.QPaintEvent;
+
 /**
  *
  * @author jan
  */
-public interface Plugin {
-  
-  public void initialize(Jibe jibe, PluginConfig config);
-  
-  public void unload(Jibe jibe);
-
+public interface TextEditListener {
+  public void paintEvent(QPaintEvent event, JibeTextEdit te);
 }

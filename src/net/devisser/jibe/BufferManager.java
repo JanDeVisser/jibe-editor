@@ -18,6 +18,7 @@
 package net.devisser.jibe;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -25,6 +26,7 @@ import java.util.TreeMap;
 import com.trolltech.qt.gui.QColor;
 import com.trolltech.qt.gui.QFileDialog;
 import com.trolltech.qt.gui.QTabWidget;
+import java.util.LinkedList;
 
 
 /**
@@ -41,16 +43,20 @@ public class BufferManager extends QTabWidget {
   private Map<String, Buffer> m_buffers = new TreeMap<String, Buffer>();
   private Map<Integer, Buffer> m_buflist = new TreeMap<Integer, Buffer>();
   
+  private Jibe m_jibe = null;
+  private List<TextEditListener> m_textEditListeners = new LinkedList<TextEditListener>();
+  
   private static BufferManager s_singleton = null; 
   
   //-------------------------------------------------------------------------
   // CONSTRUCTORS
   //-------------------------------------------------------------------------
   
-  public BufferManager() {
+  public BufferManager(Jibe jibe) {
     if (s_singleton != null) {
       throw new RuntimeException("BufferManager is a singleton");
     }
+    m_jibe = jibe;
     s_singleton = this;
     currentChanged.connect(this, "bufferSwitch()");
   }
@@ -106,6 +112,22 @@ public class BufferManager extends QTabWidget {
   
   public void select(Buffer buffer) {
     tabBar().setCurrentIndex(buffer.getIndex());
+  }
+  
+  public Jibe getJibe() {
+    return m_jibe;
+  }
+  
+  public void registerTextEditListener(TextEditListener listener) {
+    m_textEditListeners.add(listener);
+  }
+  
+  public void removeTextEditListener(TextEditListener listener) {
+    m_textEditListeners.remove(listener);
+  }
+  
+  public List<TextEditListener> getTextEditListeners() {
+    return Collections.unmodifiableList(m_textEditListeners);
   }
   
   //-------------------------------------------------------------------------

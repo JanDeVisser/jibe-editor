@@ -26,13 +26,13 @@ import java.util.zip.ZipFile;
 public class PluginManager {
   
   private Jibe m_jibe = null;
-  private Map<String, Plugin> m_plugins;
+  private Map<String, Plugin> m_plugins = new HashMap<String, Plugin>();
   
   public PluginManager(Jibe jibe) {
     m_jibe = jibe;
     Map<String, File> pluginFiles = new HashMap<String, File>();
-    scanPlugins(Config.getSystemHome(), pluginFiles);
-    scanPlugins(Config.getUserHome(), pluginFiles);
+    scanPlugins(jibe.getConfig().getSystemHome(), pluginFiles);
+    scanPlugins(jibe.getConfig().getUserHome(), pluginFiles);
     initialize(pluginFiles);
   }
   
@@ -74,6 +74,7 @@ public class PluginManager {
   private void initialize(Map<String, File> plugins) {
     for (String name : plugins.keySet()) {
       File codebase = plugins.get(name);
+      System.err.println("Initializing plugin " + name + " at " + codebase);
       if (codebase.isDirectory()) {
         initializeDirectory(name, codebase);
       } else {
@@ -121,7 +122,7 @@ public class PluginManager {
       PluginConfig config = new PluginConfig(name, is);
       URLClassLoader cl = URLClassLoader.newInstance(classpath, 
           Thread.currentThread().getContextClassLoader());
-      Class cls = Class.forName(config.getClassName(), true, cl);
+      Class cls = cl.loadClass(config.getClassName());
       Plugin p = (Plugin) cls.newInstance();
       p.initialize(getJibe(), config);
       m_plugins.put(name, p);
